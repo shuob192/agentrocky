@@ -58,6 +58,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.regular)
+        configureMainMenu()
         requestNotificationAuthorization()
         setupRockyWindow()
         startWalking()
@@ -67,6 +68,29 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         scheduleRandomDecision(firstRun: true)
         scheduleRandomJump(firstRun: true)
         scheduleRandomLookAround(firstRun: true)
+    }
+
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        rockyWindow?.orderFrontRegardless()
+        return false
+    }
+
+    private func configureMainMenu() {
+        let mainMenu = NSMenu()
+        let appMenuItem = NSMenuItem()
+        let appMenu = NSMenu()
+
+        appMenu.addItem(
+            NSMenuItem(
+                title: "Quit rockyAI",
+                action: #selector(NSApplication.terminate(_:)),
+                keyEquivalent: "q"
+            )
+        )
+
+        appMenuItem.submenu = appMenu
+        mainMenu.addItem(appMenuItem)
+        NSApp.mainMenu = mainMenu
     }
 
     // MARK: - Window
@@ -83,7 +107,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         panel.backgroundColor = .clear
         panel.isOpaque = false
         panel.hasShadow = false
-        panel.collectionBehavior = [.canJoinAllSpaces, .stationary]
+        panel.collectionBehavior = [.canJoinAllSpaces, .stationary, .ignoresCycle]
+        panel.isExcludedFromWindowsMenu = true
+        panel.tabbingMode = .disallowed
 
         if let screen = NSScreen.main {
             let bounds = screen.visibleFrame
