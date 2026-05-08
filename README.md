@@ -1,6 +1,10 @@
 # agentrocky
 
-A Linux desktop companion app that puts an animated pixel-art character on your screen — powered by [Claude Code](https://claude.ai/code).
+> **Linux / Windows port** of [itmesneha/agentrocky](https://github.com/itmesneha/agentrocky).
+> The original is a macOS app built with Swift/SwiftUI/AppKit.
+> This fork rewrites it in Python + PyQt6 to run on Linux and Windows, keeping all the same features and behaviour.
+
+A Linux / Windows desktop companion app that puts an animated pixel-art character on your screen — powered by [Claude Code](https://claude.ai/code).
 
 Rocky walks along the edges of your screen. Click him to open a retro terminal-style chat window and talk to Claude or Codex directly from your desktop. When a task finishes, he celebrates with a little jazz dance.
 
@@ -22,15 +26,12 @@ Rocky walks along the edges of your screen. Click him to open a retro terminal-s
 
 ## Requirements
 
-- Linux with X11 or Wayland (a compositing window manager is needed for transparency)
+- **Linux** — X11 or Wayland (compositing window manager needed for transparency)
+- **Windows** — Windows 10 or later (DWM compositing provides transparency)
 - Python 3.9+
 - PyQt6 (`pip install PyQt6`)
-- [Claude Code CLI](https://claude.ai/code) installed at one of:
-  - `~/.local/bin/claude`
-  - `~/.npm-global/bin/claude`
-  - `/usr/local/bin/claude`
-  - `/usr/bin/claude`
-- Optional: `libnotify-bin` (`notify-send`) for desktop notifications
+- [Claude Code CLI](https://claude.ai/code) installed and accessible on PATH
+- Optional (Linux): `libnotify-bin` (`notify-send`) for desktop notifications
 
 ## Quick Start
 
@@ -45,9 +46,9 @@ Rocky appears on the bottom edge of your screen — click him to start chatting.
 
 The session runs with your home directory (`~`) as the working context, so Claude can run commands and tools relative to `~`.
 
-### Wayland note
+### Wayland note (Linux)
 
-If running under Wayland and Rocky does not appear on top of other windows, try forcing the XCB backend:
+If Rocky does not appear on top of other windows, try forcing the XCB backend:
 
 ```bash
 QT_QPA_PLATFORM=xcb python main.py

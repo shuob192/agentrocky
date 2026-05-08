@@ -1,7 +1,7 @@
 import glob
 import json
 import os
-import pwd
+import sys
 import shutil
 
 from PyQt6.QtCore import QObject, QProcess, QProcessEnvironment, QTimer, pyqtSignal
@@ -13,6 +13,9 @@ CLAUDE_SEARCH_PATHS_TEMPLATE = [
     '/opt/homebrew/bin/claude',
     '/usr/local/bin/claude',
     '/usr/bin/claude',
+    # Windows (npm global install)
+    '{appdata}/npm/claude.cmd',
+    '{appdata}/npm/claude',
 ]
 
 CODEX_SEARCH_PATHS_TEMPLATE = [
@@ -21,6 +24,9 @@ CODEX_SEARCH_PATHS_TEMPLATE = [
     '/opt/homebrew/bin/codex',
     '/usr/local/bin/codex',
     '/usr/bin/codex',
+    # Windows
+    '{appdata}/npm/codex.cmd',
+    '{appdata}/npm/codex',
 ]
 
 PROVIDERS = ['claude', 'codex']
@@ -51,10 +57,13 @@ class OutputLine:
 
 
 def _real_home():
-    try:
-        return pwd.getpwuid(os.getuid()).pw_dir
-    except Exception:
-        return os.path.expanduser('~')
+    if sys.platform != 'win32':
+        try:
+            import pwd
+            return pwd.getpwuid(os.getuid()).pw_dir
+        except Exception:
+            pass
+    return os.path.expanduser('~')
 
 
 def _load_default_provider():
@@ -421,9 +430,10 @@ class AgentSession(QObject):
 
     def _search_paths(self, name):
         home = _real_home()
+        appdata = os.environ.get('APPDATA', '') if sys.platform == 'win32' else ''
         templates = CLAUDE_SEARCH_PATHS_TEMPLATE if name == 'claude' else CODEX_SEARCH_PATHS_TEMPLATE
-        paths = [t.format(home=home) for t in templates]
-        # Also search nvm and volta managed installs
+        paths = [t.format(home=home, appdata=appdata) for t in templates]
+        # Also search nvm and volta managed installs (Linux/macOS)
         paths += sorted(glob.glob(f'{home}/.nvm/versions/node/*/bin/{name}'), reverse=True)
         paths += sorted(glob.glob(f'{home}/.volta/tools/image/packages/{name}/*/bin/{name}'), reverse=True)
         return paths

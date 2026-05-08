@@ -1,5 +1,5 @@
 import os
-import pwd
+import sys
 import random
 
 
@@ -42,7 +42,10 @@ class RockyState:
 
     @property
     def real_home(self):
-        try:
-            return pwd.getpwuid(os.getuid()).pw_dir
-        except Exception:
-            return os.path.expanduser('~')
+        if sys.platform != 'win32':
+            try:
+                import pwd
+                return pwd.getpwuid(os.getuid()).pw_dir
+            except Exception:
+                pass
+        return os.path.expanduser('~')
