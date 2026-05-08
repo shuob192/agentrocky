@@ -42,7 +42,8 @@ CURSOR_FACING_MIN = 150.0
 CURSOR_FACING_AXIS = 56.0
 CURSOR_FACING_COOLDOWN = 0.35  # seconds
 
-WORKING_MESSAGES = ['working', 'building', 'thinking']
+WORKING_MESSAGES = ['rocky building', 'rocky do big science', 'rocky save erid']
+JAZZ_MESSAGES    = ['fist my bump', 'amaze amaze amaze', 'rocky hate mark']
 
 
 class RockyWindow(QWidget):
@@ -390,6 +391,7 @@ class RockyWindow(QWidget):
         s = self.state
         if not s.is_chat_open and not s.is_airborne and not s.is_sleeping:
             self._start_jazz(2.0)
+            self._show_speech_bubble(random.choice(JAZZ_MESSAGES), expire=2.0)
         self._schedule_random_jazz()
 
     # ----------------------------------------------------------------- jump
