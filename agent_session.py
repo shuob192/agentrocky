@@ -6,6 +6,8 @@ import shutil
 
 from PyQt6.QtCore import QObject, QProcess, QProcessEnvironment, QTimer, pyqtSignal
 
+from rocky_persona import ROCKY_PERSONA
+
 
 CLAUDE_SEARCH_PATHS_TEMPLATE = [
     '{home}/.local/bin/claude',
@@ -204,6 +206,7 @@ class AgentSession(QObject):
         if self.model.strip():
             args += ['--model', self.model]
         args += ['--effort', self.thinking]
+        args += ['--append-system-prompt', ROCKY_PERSONA]
         return args
 
     def _send_claude(self, prompt):
@@ -265,7 +268,7 @@ class AgentSession(QObject):
             text = (block.get('text') or '').strip()
             if text:
                 self._remember('assistant', text)
-                self._append(f'claude: {text}', OutputLine.TEXT)
+                self._append(f'Rocky: {text}', OutputLine.TEXT)
         elif btype == 'tool_use':
             name = block.get('name', 'tool')
             inp = block.get('input') or {}
@@ -308,12 +311,14 @@ class AgentSession(QObject):
         return args
 
     def _codex_prompt(self, current_prompt):
+        persona_block = f'Persona instructions:\n{ROCKY_PERSONA}\n\n'
         history = self._conversation_history[:-1][-12:]
         if not history:
-            return current_prompt
+            return persona_block + current_prompt
         lines = '\n\n'.join(f'{t["role"]}: {t["text"]}' for t in history)
         return (
-            'Continue this conversation. Use the prior turns for context and answer the latest user message.\n\n'
+            persona_block
+            + 'Continue this conversation. Use the prior turns for context and answer the latest user message.\n\n'
             f'Prior conversation:\n{lines}\n\nLatest user message:\n{current_prompt}'
         )
 
@@ -359,13 +364,13 @@ class AgentSession(QObject):
         if 'agent_message' in item_type:
             if text:
                 self._remember('assistant', text)
-                self._append(f'codex: {text}', OutputLine.TEXT)
+                self._append(f'Rocky: {text}', OutputLine.TEXT)
         elif 'error' in type_:
             self._append(text or f'[codex error] {obj}', OutputLine.ERROR)
         elif any(k in type_ for k in ('message', 'response', 'final', 'answer')):
             if text:
                 self._remember('assistant', text)
-                self._append(f'codex: {text}', OutputLine.TEXT)
+                self._append(f'Rocky: {text}', OutputLine.TEXT)
 
     def _extract_text(self, value):
         if isinstance(value, str):
