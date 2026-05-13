@@ -8,6 +8,7 @@ from PyQt6.QtWidgets import (
 from agent_session import (
     DEFAULT_MODELS, MODEL_SUGGESTIONS, PROVIDERS, THINKING_OPTIONS, OutputLine,
     _load_default_provider, _save_default_provider,
+    _load_user_name,
 )
 
 _COLOR_TEXT   = QColor('#00cc00')
@@ -65,6 +66,17 @@ class SettingsPanel(QWidget):
         self._model_box.currentTextChanged.connect(self._on_model_changed)
         layout.addWidget(self._model_box)
 
+        layout.addWidget(self._label('Your name', dim=True))
+        self._name_field = QLineEdit()
+        self._name_field.setPlaceholderText('What should Rocky call you?')
+        self._name_field.setMaxLength(40)
+        self._name_field.setStyleSheet(
+            'background:#111; color:#00cc00; font-family:monospace; font-size:12px;'
+            'border:1px solid #003300; padding:2px;'
+        )
+        self._name_field.editingFinished.connect(self._on_name_committed)
+        layout.addWidget(self._name_field)
+
         layout.addWidget(self._label('Changes apply immediately.', dim=True, size=10))
         layout.addStretch()
 
@@ -78,12 +90,19 @@ class SettingsPanel(QWidget):
         self._refresh_model_suggestions(self.session.provider)
         self._thinking_box.setCurrentText(self.session.thinking)
         self._model_box.setCurrentText(self.session.model)
+        self._name_field.setText(self.session.user_name)
         self._syncing = False
 
     def set_enabled(self, enabled):
         self._provider_box.setEnabled(enabled)
         self._thinking_box.setEnabled(enabled)
         self._model_box.setEnabled(enabled)
+        self._name_field.setEnabled(enabled)
+
+    def _on_name_committed(self):
+        if self._syncing:
+            return
+        self.session.set_user_name(self._name_field.text())
 
     def _on_default_provider_changed(self, provider):
         if self._syncing:

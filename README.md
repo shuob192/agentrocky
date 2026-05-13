@@ -99,3 +99,5 @@ Settings (default agent, model, thinking level) are saved to `~/.config/agentroc
 The agent is wrapped with a persona system prompt defined in `rocky_persona.py`. This makes Claude (and Codex) respond as Rocky — an Eridian engineer from *Project Hail Mary* — with warm, slightly broken English and occasional musical chord asides. For Claude the prompt is appended via `--append-system-prompt`, preserving Claude Code's built-in coding instructions. For Codex it is prepended to each prompt call.
 
 If you prefer a plain Claude or Codex experience, open `rocky_persona.py` and empty the `ROCKY_PERSONA` string.
+
+On first launch Rocky asks for your name so he can address you personally. You can change it later in the chat window's settings panel, or by editing `~/.config/agentrocky/settings.json`.

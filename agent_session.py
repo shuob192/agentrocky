@@ -6,7 +6,7 @@ import shutil
 
 from PyQt6.QtCore import QObject, QProcess, QProcessEnvironment, QTimer, pyqtSignal
 
-from rocky_persona import ROCKY_PERSONA
+from rocky_persona import build_rocky_persona
 
 
 CLAUDE_SEARCH_PATHS_TEMPLATE = [
@@ -86,6 +86,25 @@ def _save_default_provider(provider):
         pass
 
 
+def _load_user_name() -> str:
+    try:
+        return _load_config().get('user_name', '')
+    except Exception:
+        return ''
+
+
+def _save_user_name(name: str):
+    name = name.strip()[:40]
+    if not name:
+        return
+    try:
+        cfg = _load_config()
+        cfg['user_name'] = name
+        _save_config(cfg)
+    except Exception:
+        pass
+
+
 def _config_path():
     d = os.path.join(os.path.expanduser('~'), '.config', 'agentrocky')
     os.makedirs(d, exist_ok=True)
@@ -116,6 +135,7 @@ class AgentSession(QObject):
         self.lines = []
         self.is_ready = False
         self.is_running = False
+        self.user_name = _load_user_name()
         self.provider = _load_default_provider()
         self.model = DEFAULT_MODELS[self.provider]
         self.thinking = 'high'
@@ -143,6 +163,14 @@ class AgentSession(QObject):
         self._set_ready(False)
         self.lines.clear()
         self._start()
+
+    def set_user_name(self, name: str):
+        name = name.strip()[:40]
+        if name == self.user_name:
+            return
+        self.user_name = name
+        _save_user_name(name)
+        self.new_session()
 
     def apply_settings(self, provider, model, thinking):
         if self.is_running:
@@ -206,7 +234,7 @@ class AgentSession(QObject):
         if self.model.strip():
             args += ['--model', self.model]
         args += ['--effort', self.thinking]
-        args += ['--append-system-prompt', ROCKY_PERSONA]
+        args += ['--append-system-prompt', build_rocky_persona(self.user_name)]
         return args
 
     def _send_claude(self, prompt):
@@ -311,7 +339,7 @@ class AgentSession(QObject):
         return args
 
     def _codex_prompt(self, current_prompt):
-        persona_block = f'Persona instructions:\n{ROCKY_PERSONA}\n\n'
+        persona_block = f'Persona instructions:\n{build_rocky_persona(self.user_name)}\n\n'
         history = self._conversation_history[:-1][-12:]
         if not history:
             return persona_block + current_prompt
