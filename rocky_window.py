@@ -702,6 +702,8 @@ class RockyWindow(QWidget):
         fm = QFontMetrics(font)
 
         padding_h, padding_v = 10, 6
+        max_text_w = ROCKY_W - padding_h * 2 - 8  # 4px margin each side
+        text = fm.elidedText(text, Qt.TextElideMode.ElideRight, max_text_w)
         bubble_w = fm.horizontalAdvance(text) + padding_h * 2
         bubble_h = fm.height() + padding_v * 2
 
