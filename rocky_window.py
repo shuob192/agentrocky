@@ -702,13 +702,12 @@ class RockyWindow(QWidget):
         fm = QFontMetrics(font)
 
         padding_h, padding_v = 10, 6
-        text_rect = fm.boundingRect(text)
-        bubble_w = text_rect.width() + padding_h * 2
-        bubble_h = text_rect.height() + padding_v * 2
+        bubble_w = fm.horizontalAdvance(text) + padding_h * 2
+        bubble_h = fm.height() + padding_v * 2
 
         if s.is_sleeping:
             # Capsule style
-            bx = cx - bubble_w // 2
+            bx = max(0, min(ROCKY_W - bubble_w, cx - bubble_w // 2))
             by = cy - SPRITE_SIZE // 2 - bubble_h - 6
             painter.setBrush(QColor('white'))
             painter.setPen(Qt.PenStyle.NoPen)
@@ -717,7 +716,7 @@ class RockyWindow(QWidget):
             painter.drawText(bx + padding_h, by + padding_v + fm.ascent(), text)
         else:
             # Rounded box with tail
-            bx = cx - bubble_w // 2
+            bx = max(0, min(ROCKY_W - bubble_w, cx - bubble_w // 2))
             by = ROCKY_H - SPRITE_SIZE - bubble_h - 16  # above sprite, bottom wall
             tail_w, tail_h = 14, 8
 
